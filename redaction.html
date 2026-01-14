@@ -58,6 +58,8 @@
                     <option value="Drame">Drame</option>
                     <option value="Sci-Fi">Sci-Fi</option>
                     <option value="Horreur">Horreur</option>
+                    <option value="Thriller">Thriller</option>
+                    <option value="Documentaire">Documentaire</option>
                 </select>
             </div>
             <div class="genre-tags" id="tagList"></div>
@@ -85,10 +87,26 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        let currentImageData = "";
-        let userIP = "";
 
-        fetch('https://api.ipify.org?format=json').then(res => res.json()).then(data => userIP = data.ip);
+        // --- PROTECTION IP (HACHAGE) ---
+        async function hashIP(ip) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(ip);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        let hashedKey = "";
+        let currentImageData = "";
+
+        // Récupérer et hacher l'IP direct
+        fetch('https://api.ipify.org?format=json')
+            .then(res => res.json())
+            .then(async data => {
+                hashedKey = await hashIP(data.ip);
+                console.log("Session Anonymisée Prête");
+            });
 
         window.loadImg = function(input) {
             const file = input.files[0];
@@ -115,10 +133,11 @@
         document.getElementById('saveBtn').onclick = async () => {
             const title = document.getElementById('docTitle').value;
             if(!title) return alert("Le titre est obligatoire !");
+            if(!hashedKey) return alert("Sécurisation de la session... réessayez dans 1 seconde.");
 
             try {
                 await addDoc(collection(db, "cinedocs"), {
-                    authorIP: userIP,
+                    authorKey: hashedKey, 
                     title: title,
                     director: document.getElementById('docDirector').value,
                     year: document.getElementById('docYear').value,
@@ -127,9 +146,11 @@
                     image: currentImageData,
                     createdAt: serverTimestamp()
                 });
-                alert("Publié sur Firebase !");
                 window.location.href = 'dashboard-redac.html';
-            } catch (e) { alert("Erreur d'envoi"); }
+            } catch (e) { 
+                console.error(e);
+                alert("Erreur Firebase : Vérifiez vos règles (Rules) !"); 
+            }
         };
     </script>
 </body>
