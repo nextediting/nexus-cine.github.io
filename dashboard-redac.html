@@ -3,81 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mes Cinédocs | Espace Rédacteur</title>
+    <title>Mes Cinédocs | Cloud</title>
     <link rel="icon" type="image/png" href="NEXUS.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #fdfdfd; --text: #1a1a1a; --accent: #e50914; --border: #eee; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
-
         nav { padding: 20px 5%; border-bottom: 1px solid var(--border); background: white; display: flex; justify-content: space-between; align-items: center; }
         .logo { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.2rem; text-decoration: none; color: #111; }
-
         .container { max-width: 1000px; margin: 50px auto; padding: 0 20px; }
-        
-        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-        .header-flex h1 { font-family: 'Playfair Display', serif; font-size: 2.5rem; margin: 0; }
-
-        /* --- GRILLE DES BROUILLONS --- */
-        .docs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
-        
-        /* Bouton Nouveau [+] */
-        .new-doc-btn { 
-            border: 2px dashed #ccc; border-radius: 12px; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; min-height: 200px; cursor: pointer; 
-            transition: 0.3s; text-decoration: none; color: #888;
-        }
-        .new-doc-btn:hover { border-color: var(--accent); color: var(--accent); background: #fff5f5; }
-        .new-doc-btn span { font-size: 3rem; font-weight: 300; }
-
-        /* Carte Document */
-        .doc-card { 
-            background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; 
-            position: relative; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-        }
+        .docs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+        .new-doc-btn { border: 2px dashed #ccc; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 250px; cursor: pointer; text-decoration: none; color: #888; font-size: 3rem; transition: 0.3s; }
+        .new-doc-btn:hover { border-color: var(--accent); color: var(--accent); background: #fffafa; }
+        .doc-card { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; position: relative; transition: 0.3s; }
         .doc-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .doc-card h3 { margin: 0 0 10px 0; font-family: 'Playfair Display', serif; font-size: 1.3rem; }
-        .doc-card p { font-size: 0.85rem; color: #666; margin-bottom: 20px; }
-        
-        .doc-meta { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #aaa; font-weight: 700; }
-
-        .btn-delete { 
-            position: absolute; top: 15px; right: 15px; background: #eee; border: none; 
-            width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 1rem; color: #888;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .btn-delete:hover { background: var(--accent); color: white; }
-
-        .btn-edit { text-decoration: none; color: var(--accent); font-weight: 600; font-size: 0.9rem; }
+        .card-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: #eee; }
+        .card-body { padding: 15px; }
+        .btn-delete { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <nav>
         <a href="index.html" class="logo">NEXUS / CINEDOC</a>
-        <div style="font-size: 0.8rem; font-weight: 600;">ESPACE RÉDACTEUR</div>
+        <div id="status" style="font-size: 0.7rem; color: #aaa;">Chargement de votre session...</div>
     </nav>
 
     <div class="container">
-        <div class="header-flex">
-            <h1>Mes Cinédocs</h1>
-        </div>
-
+        <h1>Mes Cinédocs</h1>
         <div class="docs-grid" id="docsGrid">
-            <a href="redaction.html" class="new-doc-btn">
-                <span>+</span>
-                <p>Nouveau Cinédoc</p>
-            </a>
-
-            <div class="doc-card">
-                <button class="btn-delete" title="Supprimer">×</button>
-                <div class="doc-meta">Brouillon • 14 Janv.</div>
-                <h3>Titre de mon futur article</h3>
-                <p>Analyse de la mise en scène et des couleurs...</p>
-                <a href="redaction.html" class="btn-edit">Continuer l'écriture →</a>
-            </div>
+            <a href="redaction.html" class="new-doc-btn">+</a>
         </div>
     </div>
 
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDE71GtieeUYTR86jUGpRVh0-qTjx5a-c",
+            authDomain: "nexuscine-68607.firebaseapp.com",
+            projectId: "nexuscine-68607",
+            storageBucket: "nexuscine-68607.firebasestorage.app",
+            messagingSenderId: "256917505083",
+            appId: "1:256917505083:web:f1608ef459ee5b9178481e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadDocs() {
+            const res = await fetch('https://api.ipify.org?format=json');
+            const userIP = (await res.json()).ip;
+            document.getElementById('status').innerText = "Connecté via : " + userIP;
+
+            const q = query(collection(db, "cinedocs"), where("authorIP", "==", userIP));
+            const snap = await getDocs(q);
+            
+            snap.forEach(d => {
+                const data = d.data();
+                const card = document.createElement('div');
+                card.className = 'doc-card';
+                card.innerHTML = `
+                    <button class="btn-delete" onclick="delDoc('${d.id}')">×</button>
+                    <img src="${data.image || ''}" class="card-img">
+                    <div class="card-body">
+                        <div style="font-size:0.7rem; color:red; font-weight:bold;">${data.genres ? data.genres.join(' ') : ''}</div>
+                        <h3 style="margin:5px 0;">${data.title}</h3>
+                        <p style="font-size:0.8rem; color:#666;">${data.director || 'Inconnu'} (${data.year || ''})</p>
+                    </div>`;
+                document.getElementById('docsGrid').appendChild(card);
+            });
+        }
+
+        window.delDoc = async (id) => {
+            if(confirm("Voulez-vous supprimer ce document ?")) {
+                await deleteDoc(doc(db, "cinedocs", id));
+                location.reload();
+            }
+        }
+
+        loadDocs();
+    </script>
 </body>
 </html>
