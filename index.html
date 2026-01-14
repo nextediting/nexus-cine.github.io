@@ -3,73 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS CINE | Communauté & Culture Cinéma</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <title>NEXUS CINE | Accueil</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #ffffff; --text: #111; --accent: #e50914; }
-        body { margin: 0; font-family: 'Inter', sans-serif; color: var(--text); background: var(--bg); line-height: 1.6; }
+        :root { --bg: #ffffff; --text: #111; --accent: #e50914; --gray: #f9f9f9; --border: #eee; }
+        body { margin: 0; font-family: 'Inter', sans-serif; color: var(--text); background: var(--bg); }
         
-        header { padding: 30px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
-        .logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; letter-spacing: 1px; }
+        header { 
+            padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 1px solid var(--border); position: sticky; top: 0; background: white; z-index: 1000;
+        }
+        .logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; text-decoration: none; color: var(--text); }
         .logo span { color: var(--accent); }
 
-        .hero { padding: 100px 5%; text-align: center; border-bottom: 1px solid #eee; }
-        .hero h1 { font-family: 'Playfair Display', serif; font-size: 3rem; margin-bottom: 15px; }
-        .hero p { max-width: 600px; margin: 0 auto; color: #666; font-size: 1.1rem; }
+        nav ul { list-style: none; display: flex; margin: 0; padding: 0; }
+        nav li { position: relative; margin-left: 25px; }
+        nav a { text-decoration: none; color: var(--text); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .dropdown { position: absolute; top: 100%; left: 0; background: white; border: 1px solid var(--border); min-width: 200px; display: none; padding: 10px 0; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .dropdown a { text-transform: none; display: block; padding: 8px 20px; font-weight: 400; font-size: 0.9rem; }
+        nav li:hover .dropdown { display: block; }
+
+        .hero { padding: 100px 5%; text-align: center; background: var(--gray); border-bottom: 1px solid var(--border); }
+        .hero h1 { font-family: 'Playfair Display', serif; font-size: 3.5rem; margin: 0 0 20px; }
+        .hero p { max-width: 700px; margin: 0 auto 30px; font-size: 1.2rem; color: #555; }
+
+        /* --- SECTION RECRUTEMENT --- */
+        .recrutement-box { 
+            background: #111; color: white; padding: 30px; border-radius: 8px; max-width: 800px; margin: -50px auto 50px; position: relative; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .recrutement-box h2 { margin-top: 0; color: var(--accent); font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; }
+        .recrutement-box p { font-size: 0.95rem; opacity: 0.9; margin-bottom: 20px; }
+        .btn-discord { background: white; color: #111; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-weight: 700; font-size: 0.8rem; }
 
         .container { padding: 60px 5%; max-width: 1100px; margin: 0 auto; }
-        .section-label { font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 2px; color: var(--accent); display: block; margin-bottom: 30px; }
+        .section-title { font-family: 'Playfair Display', serif; font-size: 2rem; border-bottom: 2px solid var(--text); padding-bottom: 10px; margin-bottom: 40px; }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 40px; }
-        .movie-card { text-decoration: none; color: inherit; }
-        .movie-img { width: 100%; aspect-ratio: 2/3; background: #eee; border-radius: 4px; object-fit: cover; margin-bottom: 15px; }
-        .movie-card h3 { font-family: 'Playfair Display', serif; margin: 0; font-size: 1.2rem; }
-        .movie-card p { font-size: 0.85rem; color: #777; margin: 5px 0 0 0; }
+        /* --- GRID ACTUALITÉS --- */
+        .news-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; margin-bottom: 80px; }
+        .news-main { text-decoration: none; color: inherit; }
+        .news-img { width: 100%; height: 400px; background: #eee; object-fit: cover; border-radius: 4px; }
+        .news-side { display: flex; flex-direction: column; gap: 20px; }
+        .small-card { display: flex; gap: 15px; text-decoration: none; color: inherit; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        .small-card img { width: 80px; height: 80px; background: #eee; object-fit: cover; }
 
-        .discord-cta { background: #5865F2; color: white; padding: 40px; text-align: center; border-radius: 8px; margin-top: 60px; }
-        .discord-btn { display: inline-block; background: white; color: #5865F2; padding: 12px 25px; border-radius: 4px; text-decoration: none; font-weight: 600; margin-top: 20px; }
-
-        footer { padding: 40px; text-align: center; font-size: 0.8rem; color: #aaa; border-top: 1px solid #eee; }
+        footer { padding: 40px; text-align: center; font-size: 0.8rem; color: #aaa; border-top: 1px solid var(--border); }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">NEXUS<span>.</span>CINE</div>
+        <a href="index.html" class="logo">NEXUS<span>.</span>CINE</a>
         <nav>
-            <a href="https://discord.gg/TON_LIEN" style="text-decoration:none; color:var(--text); font-weight:600; font-size:0.8rem;">REJOINDRE LE DISCORD</a>
+            <ul>
+                <li><a href="index.html">Accueil</a></li>
+                <li><a href="#news">Actualités</a></li>
+                <li>
+                    <a href="#">Recommandations ▾</a>
+                    <div class="dropdown">
+                        <a href="#">Films</a>
+                        <a href="#">Séries</a>
+                        <a href="#">Vos recommandations</a>
+                    </div>
+                </li>
+                <li>
+                    <a href="#">À propos ▾</a>
+                    <div class="dropdown">
+                        <a href="#">Nexus Ciné</a>
+                        <a href="#">Dons</a>
+                    </div>
+                </li>
+            </ul>
         </nav>
     </header>
 
     <section class="hero">
         <h1>Le cinéma comme noyau.</h1>
-        <p>Découvrez des pépites indépendantes et rejoignez une communauté de passionnés du septième art.</p>
+        <p>Analyses, actualités et pépites indépendantes : bienvenue dans l'écosystème Nexus.</p>
     </section>
 
+    <div class="recrutement-box">
+        <h2>Rejoignez l'équipe</h2>
+        <p>Nous recherchons des passionnés pour rédiger des actus, des critiques et des recommandations. Prêt à faire entendre votre voix ?</p>
+        <a href="https://discord.gg/Gqvm9BF2g7" class="btn-discord">OUVRIR UN TICKET SUR DISCORD</a>
+    </div>
+
     <main class="container">
-        <span class="section-label">Dernières Recommandations</span>
-        <div class="grid">
-            <div class="movie-card">
-                <div class="movie-img"></div> <h3>Film à venir</h3>
-                <p>Analyse et recommandation en cours de rédaction...</p>
-            </div>
-            <div class="movie-card">
-                <div class="movie-img"></div>
-                <h3>Film à venir</h3>
-                <p>Analyse et recommandation en cours de rédaction...</p>
+        
+        <h2 class="section-title" id="news">Actualités Cinéma</h2>
+        <div class="news-grid">
+            <a href="#" class="news-main">
+                <img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2059" class="news-img">
+                <h3 style="font-family: 'Playfair Display'; font-size: 1.8rem; margin: 20px 0 10px;">Le retour du cinéma d'auteur en 2026</h3>
+                <p style="color: #666;">Décryptage des tendances qui vont marquer les prochaines sorties indépendantes...</p>
+            </a>
+            <div class="news-side">
+                <a href="#" class="small-card">
+                    <img src="">
+                    <div>
+                        <h4 style="margin:0; font-size:0.9rem;">Festival de Cannes : Les attentes</h4>
+                        <span style="font-size:0.7rem; color:var(--accent);">ACTU</span>
+                    </div>
+                </a>
+                <a href="#" class="small-card">
+                    <img src="">
+                    <div>
+                        <h4 style="margin:0; font-size:0.9rem;">Nouveau trailer pour le prochain Nolan</h4>
+                        <span style="font-size:0.7rem; color:var(--accent);">ACTU</span>
+                    </div>
+                </a>
             </div>
         </div>
 
-        <div class="discord-cta">
-            <h2>Prêt à débattre ?</h2>
-            <p>Rejoignez le Nexus pour partager vos coups de cœur et vos analyses.</p>
-            <a href="https://discord.gg/TON_LIEN" class="discord-btn">Accéder au serveur Discord</a>
-        </div>
     </main>
 
-    <footer>&copy; 2026 NEXUS CINE</footer>
+    <footer>&copy; 2026 NEXUS CINE — CULTURE & CINÉMA</footer>
 
-</body>
-</html>
 </body>
 </html>
