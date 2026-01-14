@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS CINE | Communauté & Culture Cinéma</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #111111;
+            --accent: #e50914;
+            --gray: #f5f5f5;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        /* --- HEADER --- */
+        header {
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .logo span { color: var(--accent); }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text);
+            margin-left: 25px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* --- HERO --- */
+        .hero {
+            padding: 80px 5%;
+            text-align: center;
+            background: var(--gray);
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            margin: 0 0 20px 0;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            color: #555;
+        }
+
+        /* --- CONTENU --- */
+        .container {
+            padding: 60px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin-bottom: 40px;
+            display: block;
+            font-weight: 700;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .card {
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .card:hover { opacity: 0.8; }
+
+        .card-img {
+            width: 100%;
+            aspect-ratio: 2/3;
+            background-color: #ddd;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .card-info h3 {
+            font-family: 'Playfair Display', serif;
+            margin: 15px 0 5px 0;
+            font-size: 1.4rem;
+        }
+
+        .card-info span {
+            font-size: 0.85rem;
+            color: #777;
+        }
+
+        footer {
+            padding: 40px 5%;
+            text-align: center;
+            border-top: 1px solid #eee;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">NEXUS<span>.</span>CINE</div>
+        <nav>
+            <a href="#">Recommandations</a>
+            <a href="#">Analyses</a>
+            <a href="#">Discord</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h1>L'essentiel du cinéma indépendant.</h1>
+        <p>Découvrez des pépites, explorez des analyses et rejoignez une communauté de passionnés.</p>
+    </section>
+
+    <main class="container">
+        <span class="section-title">À voir absolument</span>
+        
+        <div class="grid">
+            <div class="card">
+                <img src="https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=2070" class="card-img">
+                <div class="card-info">
+                    <h3>Aftersun</h3>
+                    <span>Drame • 2022 • Charlotte Wells</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2059" class="card-img">
+                <div class="card-info">
+                    <h3>Perfect Days</h3>
+                    <span>Drame • 2023 • Wim Wenders</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <img src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?q=80&w=2070" class="card-img">
+                <div class="card-info">
+                    <h3>The Bear</h3>
+                    <span>Série • 2022 • Christopher Storer</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        &copy; 2026 NEXUS CINE. Tous droits réservés.
+    </footer>
+
+</body>
+</html>
