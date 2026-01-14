@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CINEDOC | Éditeur Cloud</title>
+    <title>CINEDOC | Éditeur</title>
     <link rel="icon" type="image/png" href="NEXUS.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
     <style>
@@ -11,7 +11,7 @@
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
         nav { padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
         .back-btn { text-decoration: none; color: #888; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
-        .editor-container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        .editor-container { max-width: 900px; margin: 40px auto; padding: 0 20px 100px; }
         .image-dropzone { width: 100%; aspect-ratio: 16/9; border: 2px dashed #ddd; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f9f9f9; cursor: pointer; overflow: hidden; position: relative; }
         .image-dropzone img { width: 100%; height: 100%; object-fit: cover; position: absolute; display: none; }
         .title-field { width: 100%; border: none; font-family: 'Playfair Display', serif; font-size: 3.5rem; margin-top: 30px; outline: none; font-weight: 700; }
@@ -24,21 +24,24 @@
         .tag { background: #f0f0f0; padding: 6px 12px; border-radius: 50px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
         .tag span { cursor: pointer; color: var(--accent); font-size: 1.1rem; line-height: 0; }
         .content-area { width: 100%; border: none; font-size: 1.15rem; line-height: 1.8; outline: none; resize: none; min-height: 500px; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 25px; }
-        .actions { position: fixed; bottom: 30px; right: 30px; display: flex; gap: 10px; }
-        .btn { padding: 12px 25px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; }
-        .btn-pub { background: var(--accent); color: white; box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3); }
+        
+        .actions { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; background: white; padding: 15px 30px; border-radius: 100px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 1px solid #eee; z-index: 100; }
+        .btn { padding: 12px 25px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; font-size: 0.9rem; }
+        .btn-draft { background: #eee; color: #555; }
+        .btn-pub { background: var(--accent); color: white; }
+        .btn:hover { opacity: 0.8; transform: translateY(-2px); }
     </style>
 </head>
 <body>
 
     <nav>
-        <a href="dashboard-redac.html" class="back-btn">← Retour au Dashboard</a>
-        <div style="font-family: 'Playfair Display'; font-weight: 700;">CINEDOC EDITOR</div>
+        <a href="dashboard-redac.html" class="back-btn">← Dashboard</a>
+        <div id="editorMode" style="font-family: 'Playfair Display'; font-weight: 700;">NOUVEAU CINEDOC</div>
     </nav>
 
     <div class="editor-container">
         <div class="image-dropzone" onclick="document.getElementById('imgInput').click()">
-            <p>📷 <b>Format 16:9</b><br>Cliquez pour ajouter l'image</p>
+            <p>📷 <b>Couverture 16:9</b><br>Cliquez pour ajouter</p>
             <input type="file" id="imgInput" hidden accept="image/*" onchange="loadImg(this)">
             <img id="mainImg" src="">
         </div>
@@ -47,7 +50,7 @@
 
         <div class="meta-inputs">
             <input type="text" id="docDirector" class="meta-field" placeholder="Réalisateur">
-            <input type="number" id="docYear" class="meta-field" placeholder="Année" style="max-width:120px;">
+            <input type="number" id="docYear" class="meta-field" placeholder="Année">
         </div>
 
         <div class="genre-section">
@@ -59,22 +62,22 @@
                     <option value="Sci-Fi">Sci-Fi</option>
                     <option value="Horreur">Horreur</option>
                     <option value="Thriller">Thriller</option>
-                    <option value="Documentaire">Documentaire</option>
                 </select>
             </div>
             <div class="genre-tags" id="tagList"></div>
         </div>
 
-        <textarea id="docContent" class="content-area" placeholder="Pourquoi ce film est un chef-d'œuvre ?"></textarea>
+        <textarea id="docContent" class="content-area" placeholder="Votre analyse..."></textarea>
     </div>
 
     <div class="actions">
-        <button id="saveBtn" class="btn btn-pub">Publier sur le site</button>
+        <button onclick="saveDoc('brouillon')" class="btn btn-draft">Enregistrer brouillon</button>
+        <button onclick="saveDoc('publie')" class="btn btn-pub">Publier l'article</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBDE71GtieeUYTR86jUGpRVh0-qTjx5a-c",
@@ -87,8 +90,10 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('id');
 
-        // --- PROTECTION IP (HACHAGE) ---
         async function hashIP(ip) {
             const encoder = new TextEncoder();
             const data = encoder.encode(ip);
@@ -100,57 +105,77 @@
         let hashedKey = "";
         let currentImageData = "";
 
-        // Récupérer et hacher l'IP direct
-        fetch('https://api.ipify.org?format=json')
-            .then(res => res.json())
-            .then(async data => {
-                hashedKey = await hashIP(data.ip);
-                console.log("Session Anonymisée Prête");
-            });
+        fetch('https://api.ipify.org?format=json').then(res => res.json()).then(async data => {
+            hashedKey = await hashIP(data.ip);
+            if(editId) loadExistingDoc();
+        });
 
-        window.loadImg = function(input) {
-            const file = input.files[0];
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = document.getElementById('mainImg');
-                img.src = e.target.result;
-                img.style.display = 'block';
-                currentImageData = e.target.result;
-            };
-            reader.readAsDataURL(file);
+        // Charger si on est en mode modification
+        async function loadExistingDoc() {
+            const docRef = doc(db, "cinedocs", editId);
+            const snap = await getDoc(docRef);
+            if(snap.exists()) {
+                const data = snap.data();
+                document.getElementById('docTitle').value = data.title;
+                document.getElementById('docDirector').value = data.director;
+                document.getElementById('docYear').value = data.year;
+                document.getElementById('docContent').value = data.content;
+                document.getElementById('editorMode').innerText = "MODIFIER : " + data.title;
+                if(data.image) {
+                    const img = document.getElementById('mainImg');
+                    img.src = data.image;
+                    img.style.display = 'block';
+                    currentImageData = data.image;
+                }
+                data.genres.forEach(g => createTagElement(g));
+            }
         }
 
-        window.addTag = function() {
-            const val = document.getElementById('genreSelect').value;
-            if(!val) return;
+        window.loadImg = (input) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('mainImg').src = e.target.result;
+                document.getElementById('mainImg').style.display = 'block';
+                currentImageData = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        };
+
+        function createTagElement(val) {
             const tag = document.createElement('div');
             tag.className = 'tag';
             tag.innerHTML = `${val} <span onclick="this.parentElement.remove()">×</span>`;
             document.getElementById('tagList').appendChild(tag);
-            document.getElementById('genreSelect').value = "";
         }
 
-        document.getElementById('saveBtn').onclick = async () => {
-            const title = document.getElementById('docTitle').value;
-            if(!title) return alert("Le titre est obligatoire !");
-            if(!hashedKey) return alert("Sécurisation de la session... réessayez dans 1 seconde.");
+        window.addTag = () => {
+            const val = document.getElementById('genreSelect').value;
+            if(val) { createTagElement(val); document.getElementById('genreSelect').value = ""; }
+        };
+
+        window.saveDoc = async (status) => {
+            if(!document.getElementById('docTitle').value) return alert("Titre requis");
+            
+            const payload = {
+                authorKey: hashedKey,
+                title: document.getElementById('docTitle').value,
+                director: document.getElementById('docDirector').value,
+                year: document.getElementById('docYear').value,
+                content: document.getElementById('docContent').value,
+                genres: Array.from(document.querySelectorAll('.tag')).map(t => t.innerText.replace('×','').trim()),
+                image: currentImageData,
+                status: status,
+                lastUpdate: serverTimestamp()
+            };
 
             try {
-                await addDoc(collection(db, "cinedocs"), {
-                    authorKey: hashedKey, 
-                    title: title,
-                    director: document.getElementById('docDirector').value,
-                    year: document.getElementById('docYear').value,
-                    content: document.getElementById('docContent').value,
-                    genres: Array.from(document.querySelectorAll('.tag')).map(t => t.innerText.replace('×','').trim()),
-                    image: currentImageData,
-                    createdAt: serverTimestamp()
-                });
+                if(editId) {
+                    await setDoc(doc(db, "cinedocs", editId), payload, { merge: true });
+                } else {
+                    await addDoc(collection(db, "cinedocs"), payload);
+                }
                 window.location.href = 'dashboard-redac.html';
-            } catch (e) { 
-                console.error(e);
-                alert("Erreur Firebase : Vérifiez vos règles (Rules) !"); 
-            }
+            } catch (e) { alert("Erreur de sauvegarde"); }
         };
     </script>
 </body>
