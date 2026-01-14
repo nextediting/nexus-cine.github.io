@@ -41,7 +41,7 @@
 
     <div class="editor-container">
         <div class="image-dropzone" onclick="document.getElementById('imgInput').click()">
-            <p>📷 <b>Couverture 16:9</b><br>Cliquez pour ajouter</p>
+            <p id="dropText">📷 <b>Couverture 16:9</b><br>Cliquez pour ajouter</p>
             <input type="file" id="imgInput" hidden accept="image/*" onchange="loadImg(this)">
             <img id="mainImg" src="">
         </div>
@@ -55,13 +55,14 @@
 
         <div class="genre-section">
             <div class="genre-controls">
-                <select id="genreSelect" onchange="addTag()">
+                <select id="genreSelect" onchange="window.addTag()">
                     <option value="">+ Ajouter un genre</option>
                     <option value="Action">Action</option>
                     <option value="Drame">Drame</option>
                     <option value="Sci-Fi">Sci-Fi</option>
                     <option value="Horreur">Horreur</option>
                     <option value="Thriller">Thriller</option>
+                    <option value="Animation">Animation</option>
                 </select>
             </div>
             <div class="genre-tags" id="tagList"></div>
@@ -71,8 +72,8 @@
     </div>
 
     <div class="actions">
-        <button onclick="saveDoc('brouillon')" class="btn btn-draft">Enregistrer brouillon</button>
-        <button onclick="saveDoc('publie')" class="btn btn-pub">Publier l'article</button>
+        <button onclick="window.saveDoc('brouillon')" class="btn btn-draft">Enregistrer brouillon</button>
+        <button onclick="window.saveDoc('publie')" class="btn btn-pub">Publier l'article</button>
     </div>
 
     <script type="module">
@@ -94,6 +95,10 @@
         const urlParams = new URLSearchParams(window.location.search);
         const editId = urlParams.get('id');
 
+        let hashedKey = "";
+        let currentImageData = "";
+
+        // --- HACHAGE IP ---
         async function hashIP(ip) {
             const encoder = new TextEncoder();
             const data = encoder.encode(ip);
@@ -102,43 +107,49 @@
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
-        let hashedKey = "";
-        let currentImageData = "";
+        fetch('https://api.ipify.org?format=json')
+            .then(res => res.json())
+            .then(async data => {
+                hashedKey = await hashIP(data.ip);
+                if(editId) loadExistingDoc();
+            });
 
-        fetch('https://api.ipify.org?format=json').then(res => res.json()).then(async data => {
-            hashedKey = await hashIP(data.ip);
-            if(editId) loadExistingDoc();
-        });
-
-        // Charger si on est en mode modification
         async function loadExistingDoc() {
-            const docRef = doc(db, "cinedocs", editId);
-            const snap = await getDoc(docRef);
-            if(snap.exists()) {
-                const data = snap.data();
-                document.getElementById('docTitle').value = data.title;
-                document.getElementById('docDirector').value = data.director;
-                document.getElementById('docYear').value = data.year;
-                document.getElementById('docContent').value = data.content;
-                document.getElementById('editorMode').innerText = "MODIFIER : " + data.title;
-                if(data.image) {
-                    const img = document.getElementById('mainImg');
-                    img.src = data.image;
-                    img.style.display = 'block';
-                    currentImageData = data.image;
+            try {
+                const docRef = doc(db, "cinedocs", editId);
+                const snap = await getDoc(docRef);
+                if(snap.exists()) {
+                    const data = snap.data();
+                    document.getElementById('docTitle').value = data.title || "";
+                    document.getElementById('docDirector').value = data.director || "";
+                    document.getElementById('docYear').value = data.year || "";
+                    document.getElementById('docContent').value = data.content || "";
+                    document.getElementById('editorMode').innerText = "MODIFIER : " + data.title;
+                    if(data.image) {
+                        const img = document.getElementById('mainImg');
+                        img.src = data.image;
+                        img.style.display = 'block';
+                        currentImageData = data.image;
+                        document.getElementById('dropText').style.display = 'none';
+                    }
+                    if(data.genres) data.genres.forEach(g => createTagElement(g));
                 }
-                data.genres.forEach(g => createTagElement(g));
-            }
+            } catch(e) { console.error("Erreur de chargement", e); }
         }
 
         window.loadImg = (input) => {
+            const file = input.files[0];
+            if (file.size > 1000000) { // Si > 1Mo, on prévient
+                alert("Image lourde ! La sauvegarde pourrait échouer.");
+            }
             const reader = new FileReader();
             reader.onload = (e) => {
                 document.getElementById('mainImg').src = e.target.result;
                 document.getElementById('mainImg').style.display = 'block';
+                document.getElementById('dropText').style.display = 'none';
                 currentImageData = e.target.result;
             };
-            reader.readAsDataURL(input.files[0]);
+            reader.readAsDataURL(file);
         };
 
         function createTagElement(val) {
@@ -149,21 +160,26 @@
         }
 
         window.addTag = () => {
-            const val = document.getElementById('genreSelect').value;
-            if(val) { createTagElement(val); document.getElementById('genreSelect').value = ""; }
+            const select = document.getElementById('genreSelect');
+            if(select.value) { 
+                createTagElement(select.value); 
+                select.value = ""; 
+            }
         };
 
         window.saveDoc = async (status) => {
-            if(!document.getElementById('docTitle').value) return alert("Titre requis");
-            
+            const title = document.getElementById('docTitle').value.trim();
+            if(!title) return alert("Le titre est obligatoire !");
+            if(!hashedKey) return alert("Connexion en cours, réessayez...");
+
             const payload = {
                 authorKey: hashedKey,
-                title: document.getElementById('docTitle').value,
-                director: document.getElementById('docDirector').value,
-                year: document.getElementById('docYear').value,
-                content: document.getElementById('docContent').value,
+                title: title,
+                director: document.getElementById('docDirector').value || "Inconnu",
+                year: document.getElementById('docYear').value || "",
+                content: document.getElementById('docContent').value || "",
                 genres: Array.from(document.querySelectorAll('.tag')).map(t => t.innerText.replace('×','').trim()),
-                image: currentImageData,
+                image: currentImageData || "",
                 status: status,
                 lastUpdate: serverTimestamp()
             };
@@ -175,7 +191,10 @@
                     await addDoc(collection(db, "cinedocs"), payload);
                 }
                 window.location.href = 'dashboard-redac.html';
-            } catch (e) { alert("Erreur de sauvegarde"); }
+            } catch (e) { 
+                console.error(e);
+                alert("Erreur Firebase : " + e.message); 
+            }
         };
     </script>
 </body>
