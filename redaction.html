@@ -3,52 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CINEDOC | Éditeur de Création</title>
+    <title>CINEDOC | Éditeur Cloud</title>
     <link rel="icon" type="image/png" href="NEXUS.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #ffffff; --text: #1a1a1a; --accent: #e50914; --border: #eee; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
-
         nav { padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
         .back-btn { text-decoration: none; color: #888; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
-
         .editor-container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
-
-        /* --- ZONE IMAGE 16:9 --- */
-        .image-dropzone { 
-            width: 100%; aspect-ratio: 16/9; border: 2px dashed #ddd; border-radius: 12px; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            background: #f9f9f9; cursor: pointer; overflow: hidden; position: relative;
-        }
-        .image-dropzone:hover { border-color: var(--accent); background: #fffafa; }
+        .image-dropzone { width: 100%; aspect-ratio: 16/9; border: 2px dashed #ddd; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f9f9f9; cursor: pointer; overflow: hidden; position: relative; }
         .image-dropzone img { width: 100%; height: 100%; object-fit: cover; position: absolute; display: none; }
-        .image-dropzone p { color: #aaa; text-align: center; font-size: 0.9rem; }
-
-        /* --- TITRE --- */
-        .title-field { 
-            width: 100%; border: none; font-family: 'Playfair Display', serif; 
-            font-size: 3.5rem; margin-top: 30px; outline: none; font-weight: 700; 
-        }
-
-        /* --- SYSTEME DE GENRES --- */
-        .genre-section { margin: 25px 0; }
+        .title-field { width: 100%; border: none; font-family: 'Playfair Display', serif; font-size: 3.5rem; margin-top: 30px; outline: none; font-weight: 700; }
+        .meta-inputs { display: flex; gap: 15px; margin: 20px 0; }
+        .meta-field { border: 1px solid #ddd; padding: 12px; border-radius: 8px; font-family: 'Inter'; font-size: 0.9rem; outline: none; flex: 1; }
+        .genre-section { margin: 25px 0; border-top: 1px solid var(--border); padding-top: 25px; }
         .genre-controls { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; }
-        select { padding: 8px 15px; border-radius: 6px; border: 1px solid #ddd; outline: none; }
-        
+        select { padding: 8px 15px; border-radius: 6px; border: 1px solid #ddd; outline: none; background: white; }
         .genre-tags { display: flex; flex-wrap: wrap; gap: 10px; }
-        .tag { 
-            background: #f0f0f0; padding: 6px 12px; border-radius: 50px; 
-            font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 8px; 
-        }
+        .tag { background: #f0f0f0; padding: 6px 12px; border-radius: 50px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
         .tag span { cursor: pointer; color: var(--accent); font-size: 1.1rem; line-height: 0; }
-
-        /* --- ZONE TEXTE --- */
-        .content-area { 
-            width: 100%; border: none; font-size: 1.15rem; line-height: 1.8; 
-            outline: none; resize: none; min-height: 500px; margin-top: 20px; 
-        }
-
+        .content-area { width: 100%; border: none; font-size: 1.15rem; line-height: 1.8; outline: none; resize: none; min-height: 500px; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 25px; }
         .actions { position: fixed; bottom: 30px; right: 30px; display: flex; gap: 10px; }
         .btn { padding: 12px 25px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; }
         .btn-pub { background: var(--accent); color: white; box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3); }
@@ -63,12 +38,17 @@
 
     <div class="editor-container">
         <div class="image-dropzone" onclick="document.getElementById('imgInput').click()">
-            <p>📷 <b>Format 16:9 préférable</b><br>Cliquez pour ajouter l'image de couverture</p>
+            <p>📷 <b>Format 16:9</b><br>Cliquez pour ajouter l'image</p>
             <input type="file" id="imgInput" hidden accept="image/*" onchange="loadImg(this)">
             <img id="mainImg" src="">
         </div>
 
-        <input type="text" class="title-field" placeholder="Titre du film ou de l'article">
+        <input type="text" id="docTitle" class="title-field" placeholder="Titre du film">
+
+        <div class="meta-inputs">
+            <input type="text" id="docDirector" class="meta-field" placeholder="Réalisateur">
+            <input type="number" id="docYear" class="meta-field" placeholder="Année" style="max-width:120px;">
+        </div>
 
         <div class="genre-section">
             <div class="genre-controls">
@@ -76,55 +56,81 @@
                     <option value="">+ Ajouter un genre</option>
                     <option value="Action">Action</option>
                     <option value="Drame">Drame</option>
-                    <option value="Sci-Fi">Science-Fiction</option>
+                    <option value="Sci-Fi">Sci-Fi</option>
                     <option value="Horreur">Horreur</option>
-                    <option value="Thriller">Thriller</option>
-                    <option value="Documentaire">Documentaire</option>
                 </select>
             </div>
-            <div class="genre-tags" id="tagList">
-                </div>
+            <div class="genre-tags" id="tagList"></div>
         </div>
 
-        <textarea class="content-area" placeholder="Il était une fois au cinéma... Pourquoi ce film est un chef-d'œuvre ?"></textarea>
+        <textarea id="docContent" class="content-area" placeholder="Pourquoi ce film est un chef-d'œuvre ?"></textarea>
     </div>
 
     <div class="actions">
-        <button class="btn btn-pub">Publier sur le site</button>
+        <button id="saveBtn" class="btn btn-pub">Publier sur le site</button>
     </div>
 
-    <script>
-        // Gestion de l'image
-        function loadImg(input) {
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDE71GtieeUYTR86jUGpRVh0-qTjx5a-c",
+            authDomain: "nexuscine-68607.firebaseapp.com",
+            projectId: "nexuscine-68607",
+            storageBucket: "nexuscine-68607.firebasestorage.app",
+            messagingSenderId: "256917505083",
+            appId: "1:256917505083:web:f1608ef459ee5b9178481e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        let currentImageData = "";
+        let userIP = "";
+
+        fetch('https://api.ipify.org?format=json').then(res => res.json()).then(data => userIP = data.ip);
+
+        window.loadImg = function(input) {
             const file = input.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = document.getElementById('mainImg');
-                    img.src = e.target.result;
-                    img.style.display = 'block';
-                }
-                reader.readAsDataURL(file);
-            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = document.getElementById('mainImg');
+                img.src = e.target.result;
+                img.style.display = 'block';
+                currentImageData = e.target.result;
+            };
+            reader.readAsDataURL(file);
         }
 
-        // Gestion des Tags (Genres)
-        function addTag() {
-            const select = document.getElementById('genreSelect');
-            const val = select.value;
-            if (val === "") return;
-
-            const tagList = document.getElementById('tagList');
-            
-            // Créer le tag
+        window.addTag = function() {
+            const val = document.getElementById('genreSelect').value;
+            if(!val) return;
             const tag = document.createElement('div');
             tag.className = 'tag';
             tag.innerHTML = `${val} <span onclick="this.parentElement.remove()">×</span>`;
-            
-            tagList.appendChild(tag);
-            select.value = ""; // Reset du menu
+            document.getElementById('tagList').appendChild(tag);
+            document.getElementById('genreSelect').value = "";
         }
-    </script>
 
+        document.getElementById('saveBtn').onclick = async () => {
+            const title = document.getElementById('docTitle').value;
+            if(!title) return alert("Le titre est obligatoire !");
+
+            try {
+                await addDoc(collection(db, "cinedocs"), {
+                    authorIP: userIP,
+                    title: title,
+                    director: document.getElementById('docDirector').value,
+                    year: document.getElementById('docYear').value,
+                    content: document.getElementById('docContent').value,
+                    genres: Array.from(document.querySelectorAll('.tag')).map(t => t.innerText.replace('×','').trim()),
+                    image: currentImageData,
+                    createdAt: serverTimestamp()
+                });
+                alert("Publié sur Firebase !");
+                window.location.href = 'dashboard-redac.html';
+            } catch (e) { alert("Erreur d'envoi"); }
+        };
+    </script>
 </body>
 </html>
