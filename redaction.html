@@ -12,19 +12,31 @@
         nav { padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
         .back-btn { text-decoration: none; color: #888; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
         
-        /* Layout Principal avec Sidebar IA */
-        .wrapper { display: flex; max-width: 1400px; margin: 0 auto; padding: 0 5%; }
-        .editor-container { flex: 1; max-width: 850px; padding: 40px 20px 100px; }
+        /* Layout Principal */
+        .editor-container { max-width: 800px; margin: 40px auto; padding: 0 20px 100px; transition: 0.3s; }
         
-        /* SIDEBAR IA */
-        .ai-sidebar { width: 300px; padding: 40px 20px; border-left: 1px solid var(--border); background: #fafafa; height: calc(100vh - 80px); position: sticky; top: 70px; }
-        .ai-title { font-family: 'Playfair Display'; font-size: 1.2rem; margin-bottom: 20px; color: var(--accent); }
-        .ai-btn { width: 100%; text-align: left; padding: 12px; background: white; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; cursor: pointer; font-family: 'Inter'; font-size: 0.8rem; font-weight: 600; transition: 0.2s; }
-        .ai-btn:hover { border-color: var(--accent); color: var(--accent); }
-        #ai-output { font-size: 0.85rem; line-height: 1.5; color: #444; background: white; border: 1px solid #eee; padding: 15px; border-radius: 8px; min-height: 150px; white-space: pre-wrap; margin-top: 10px; }
-        .ai-loader { font-size: 0.75rem; color: #888; margin-top: 10px; display: none; }
+        /* SIDEBAR IA FLOTTANTE (Fixe le problème de l'écran mangé) */
+        .ai-sidebar { 
+            position: fixed; 
+            right: 20px; 
+            top: 90px; 
+            width: 280px; 
+            background: white; 
+            border: 1px solid #ddd; 
+            border-radius: 12px; 
+            padding: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            z-index: 1000;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .ai-title { font-family: 'Playfair Display'; font-size: 1rem; margin-bottom: 15px; color: var(--accent); font-weight: 700; border-bottom: 1px solid #eee; padding-bottom: 8px;}
+        .ai-btn { width: 100%; text-align: left; padding: 10px; background: #f9f9f9; border: 1px solid #eee; border-radius: 6px; margin-bottom: 8px; cursor: pointer; font-family: 'Inter'; font-size: 0.75rem; font-weight: 600; transition: 0.2s; }
+        .ai-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+        #ai-output { font-size: 0.8rem; line-height: 1.4; color: #444; background: #fff; padding: 10px; border-radius: 6px; min-height: 50px; white-space: pre-wrap; margin-top: 10px; border-top: 1px solid #eee; }
+        .ai-loader { font-size: 0.7rem; color: #888; margin-top: 5px; display: none; font-style: italic; }
 
-        /* Styles existants conservés */
+        /* Styles existants */
         .image-dropzone { width: 100%; aspect-ratio: 16/9; border: 2px dashed #ddd; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f9f9f9; cursor: pointer; overflow: hidden; position: relative; }
         .image-dropzone img { width: 100%; height: 100%; object-fit: cover; position: absolute; display: none; }
         .title-field { width: 100%; border: none; font-family: 'Playfair Display', serif; font-size: 3.5rem; margin-top: 30px; outline: none; font-weight: 700; background: transparent; }
@@ -52,50 +64,48 @@
         <div id="editorMode" style="font-family: 'Playfair Display'; font-weight: 700;">NOUVEAU CINEDOC</div>
     </nav>
 
-    <div class="wrapper">
-        <main class="editor-container">
-            <div class="image-dropzone" onclick="document.getElementById('imgInput').click()">
-                <p id="dropText">📷 <b>Couverture 16:9</b><br>Cliquez pour ajouter</p>
-                <input type="file" id="imgInput" hidden accept="image/*" onchange="loadImg(this)">
-                <img id="mainImg" src="">
+    <div class="editor-container">
+        <div class="image-dropzone" onclick="document.getElementById('imgInput').click()">
+            <p id="dropText">📷 <b>Couverture 16:9</b><br>Cliquez pour ajouter</p>
+            <input type="file" id="imgInput" hidden accept="image/*" onchange="loadImg(this)">
+            <img id="mainImg" src="">
+        </div>
+
+        <input type="text" id="docTitle" class="title-field" placeholder="Titre du film">
+
+        <div class="meta-inputs">
+            <input type="text" id="docDirector" class="meta-field" placeholder="Réalisateur">
+            <input type="number" id="docYear" class="meta-field" placeholder="Année">
+        </div>
+
+        <div class="genre-section">
+            <div class="genre-controls">
+                <select id="genreSelect" onchange="window.addTag()">
+                    <option value="">+ Ajouter un genre</option>
+                    <option value="Action">Action</option>
+                    <option value="Drame">Drame</option>
+                    <option value="Sci-Fi">Sci-Fi</option>
+                    <option value="Horreur">Horreur</option>
+                    <option value="Thriller">Thriller</option>
+                    <option value="Animation">Animation</option>
+                </select>
             </div>
+            <div class="genre-tags" id="tagList"></div>
+        </div>
 
-            <input type="text" id="docTitle" class="title-field" placeholder="Titre du film">
-
-            <div class="meta-inputs">
-                <input type="text" id="docDirector" class="meta-field" placeholder="Réalisateur">
-                <input type="number" id="docYear" class="meta-field" placeholder="Année">
-            </div>
-
-            <div class="genre-section">
-                <div class="genre-controls">
-                    <select id="genreSelect" onchange="window.addTag()">
-                        <option value="">+ Ajouter un genre</option>
-                        <option value="Action">Action</option>
-                        <option value="Drame">Drame</option>
-                        <option value="Sci-Fi">Sci-Fi</option>
-                        <option value="Horreur">Horreur</option>
-                        <option value="Thriller">Thriller</option>
-                        <option value="Animation">Animation</option>
-                    </select>
-                </div>
-                <div class="genre-tags" id="tagList"></div>
-            </div>
-
-            <textarea id="docContent" class="content-area" placeholder="Votre analyse..."></textarea>
-        </main>
-
-        <aside class="ai-sidebar">
-            <div class="ai-title">Nexus Assistant AI</div>
-            <button class="ai-btn" onclick="askAI('infos')">📍 Infos techniques (Auto)</button>
-            <button class="ai-btn" onclick="askAI('anecdote')">🎬 Anecdote de tournage</button>
-            <button class="ai-btn" onclick="askAI('style')">🎥 Analyse du style visuel</button>
-            <button class="ai-btn" onclick="askAI('relire')">✍️ Améliorer mon texte</button>
-            
-            <div id="ai-loader" class="ai-loader">L'IA analyse le film...</div>
-            <div id="ai-output">Besoin d'aide pour votre article ?</div>
-        </aside>
+        <textarea id="docContent" class="content-area" placeholder="Votre analyse..."></textarea>
     </div>
+
+    <aside class="ai-sidebar">
+        <div class="ai-title">Nexus Assistant AI</div>
+        <button class="ai-btn" onclick="askAI('infos')">📍 Infos techniques (Auto)</button>
+        <button class="ai-btn" onclick="askAI('anecdote')">🎬 Anecdote de tournage</button>
+        <button class="ai-btn" onclick="askAI('style')">🎥 Analyse du style visuel</button>
+        <button class="ai-btn" onclick="askAI('relire')">✍️ Améliorer mon texte</button>
+        
+        <div id="ai-loader" class="ai-loader">Nexus réfléchit...</div>
+        <div id="ai-output">Besoin d'un coup de main ?</div>
+    </aside>
 
     <div class="actions">
         <button onclick="window.saveDoc('brouillon')" class="btn btn-draft">Enregistrer brouillon</button>
@@ -123,7 +133,7 @@
         let hashedKey = "";
         let currentImageData = "";
 
-        // --- GESTION IA ---
+        // --- GESTION IA CORRIGÉE (Anti-undefined) ---
         window.askAI = async (type) => {
             const title = document.getElementById('docTitle').value;
             const content = document.getElementById('docContent').value;
@@ -133,13 +143,14 @@
             if(!title && type !== 'relire') return alert("Indiquez le titre du film.");
 
             let prompt = "";
-            if(type === 'infos') prompt = `Donne-moi UNIQUEMENT le réalisateur et l'année du film "${title}" sous cette forme précise : Réalisateur : [Nom], Année : [Année].`;
-            if(type === 'anecdote') prompt = `Raconte-moi une anecdote de tournage courte et méconnue sur le film "${title}".`;
-            if(type === 'style') prompt = `Quels sont les points clés de la mise en scène et de la photographie du film "${title}" ? (3 points courts)`;
-            if(type === 'relire') prompt = `Reformule ce texte pour qu'il soit plus professionnel et élégant, tout en restant concis : ${content}`;
+            if(type === 'infos') prompt = `Réalisateur et année du film "${title}". Réponds au format strict : Réalisateur : [Nom], Année : [Année].`;
+            if(type === 'anecdote') prompt = `Raconte une anecdote de tournage courte sur le film "${title}".`;
+            if(type === 'style') prompt = `Analyse le style visuel du film "${title}" en 3 points courts.`;
+            if(type === 'relire') prompt = `Reformule ce texte de façon plus élégante : ${content}`;
 
             loader.style.display = "block";
             output.style.opacity = "0.5";
+            output.innerText = "Réflexion en cours...";
 
             try {
                 const res = await fetch("https://nexus-ai-n1ji.onrender.com/ask", {
@@ -148,24 +159,29 @@
                     body: JSON.stringify({ prompt: prompt })
                 });
                 const data = await res.json();
-                output.innerText = data.text;
                 
-                // Optionnel : remplissage auto des champs si infos techniques
-                if(type === 'infos') {
-                    const matchReal = data.text.match(/Réalisateur\s*:\s*(.*)/);
-                    const matchAnnee = data.text.match(/Année\s*:\s*(\d{4})/);
-                    if(matchReal) document.getElementById('docDirector').value = matchReal[1].split(',')[0].trim();
-                    if(matchAnnee) document.getElementById('docYear').value = matchAnnee[1];
+                // Correction du undefined
+                if (data && data.text) {
+                    output.innerText = data.text;
+                    
+                    if(type === 'infos') {
+                        const matchReal = data.text.match(/Réalisateur\s*:\s*([^,\n]*)/i);
+                        const matchAnnee = data.text.match(/Année\s*:\s*(\d{4})/);
+                        if(matchReal) document.getElementById('docDirector').value = matchReal[1].trim();
+                        if(matchAnnee) document.getElementById('docYear').value = matchAnnee[1];
+                    }
+                } else {
+                    output.innerText = "Désolé, je n'ai pas trouvé de réponse.";
                 }
             } catch (e) {
-                output.innerText = "Erreur de connexion avec le serveur IA.";
+                output.innerText = "Serveur en pause. Réessayez dans 10 secondes.";
             } finally {
                 loader.style.display = "none";
                 output.style.opacity = "1";
             }
         };
 
-        // --- LOGIQUE FIREBASE EXISTANTE ---
+        // --- FIREBASE ET LOGIQUE ---
         async function hashIP(ip) {
             const encoder = new TextEncoder();
             const data = encoder.encode(ip);
@@ -191,17 +207,15 @@
                     document.getElementById('docDirector').value = data.director || "";
                     document.getElementById('docYear').value = data.year || "";
                     document.getElementById('docContent').value = data.content || "";
-                    document.getElementById('editorMode').innerText = "MODIFIER : " + data.title;
                     if(data.image) {
                         const img = document.getElementById('mainImg');
-                        img.src = data.image;
-                        img.style.display = 'block';
+                        img.src = data.image; img.style.display = 'block';
                         currentImageData = data.image;
                         document.getElementById('dropText').style.display = 'none';
                     }
                     if(data.genres) data.genres.forEach(g => createTagElement(g));
                 }
-            } catch(e) { console.error("Erreur de chargement", e); }
+            } catch(e) { console.error(e); }
         }
 
         window.loadImg = (input) => {
@@ -225,17 +239,12 @@
 
         window.addTag = () => {
             const select = document.getElementById('genreSelect');
-            if(select.value) { 
-                createTagElement(select.value); 
-                select.value = ""; 
-            }
+            if(select.value) { createTagElement(select.value); select.value = ""; }
         };
 
         window.saveDoc = async (status) => {
             const title = document.getElementById('docTitle').value.trim();
             if(!title) return alert("Le titre est obligatoire !");
-            if(!hashedKey) return alert("Connexion en cours...");
-
             const payload = {
                 authorKey: hashedKey,
                 title: title,
@@ -247,12 +256,11 @@
                 status: status,
                 lastUpdate: serverTimestamp()
             };
-
             try {
                 if(editId) await setDoc(doc(db, "cinedocs", editId), payload, { merge: true });
                 else await addDoc(collection(db, "cinedocs"), payload);
                 window.location.href = 'dashboard-redac.html';
-            } catch (e) { alert("Erreur Firebase : " + e.message); }
+            } catch (e) { alert(e.message); }
         };
     </script>
 </body>
