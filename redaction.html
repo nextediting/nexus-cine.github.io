@@ -11,30 +11,13 @@
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
         nav { padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
         .back-btn { text-decoration: none; color: #888; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
-        
         .editor-container { max-width: 800px; margin: 40px auto; padding: 0 20px 100px; transition: 0.3s; }
-        
-        /* SIDEBAR IA FLOTTANTE */
-        .ai-sidebar { 
-            position: fixed; 
-            right: 20px; 
-            top: 90px; 
-            width: 280px; 
-            background: white; 
-            border: 1px solid #ddd; 
-            border-radius: 12px; 
-            padding: 15px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
-            z-index: 1000;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
+        .ai-sidebar { position: fixed; right: 20px; top: 90px; width: 280px; background: white; border: 1px solid #ddd; border-radius: 12px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 1000; max-height: 80vh; overflow-y: auto; }
         .ai-title { font-family: 'Playfair Display'; font-size: 1rem; margin-bottom: 15px; color: var(--accent); font-weight: 700; border-bottom: 1px solid #eee; padding-bottom: 8px;}
         .ai-btn { width: 100%; text-align: left; padding: 10px; background: #f9f9f9; border: 1px solid #eee; border-radius: 6px; margin-bottom: 8px; cursor: pointer; font-family: 'Inter'; font-size: 0.75rem; font-weight: 600; transition: 0.2s; }
         .ai-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
         #ai-output { font-size: 0.8rem; line-height: 1.4; color: #444; background: #fff; padding: 10px; border-radius: 6px; min-height: 50px; white-space: pre-wrap; margin-top: 10px; border-top: 1px solid #eee; }
         .ai-loader { font-size: 0.7rem; color: #888; margin-top: 5px; display: none; font-style: italic; }
-
         .image-dropzone { width: 100%; aspect-ratio: 16/9; border: 2px dashed #ddd; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f9f9f9; cursor: pointer; overflow: hidden; position: relative; }
         .image-dropzone img { width: 100%; height: 100%; object-fit: cover; position: absolute; display: none; }
         .title-field { width: 100%; border: none; font-family: 'Playfair Display', serif; font-size: 3.5rem; margin-top: 30px; outline: none; font-weight: 700; background: transparent; }
@@ -47,7 +30,6 @@
         .tag { background: #f0f0f0; padding: 6px 12px; border-radius: 50px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
         .tag span { cursor: pointer; color: var(--accent); font-size: 1.1rem; line-height: 0; }
         .content-area { width: 100%; border: none; font-size: 1.15rem; line-height: 1.8; outline: none; resize: none; min-height: 500px; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 25px; }
-        
         .actions { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; background: white; padding: 15px 30px; border-radius: 100px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 1px solid #eee; z-index: 100; }
         .btn { padding: 12px 25px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; font-size: 0.9rem; }
         .btn-draft { background: #eee; color: #555; }
@@ -101,7 +83,7 @@
         <button class="ai-btn" onclick="askAI('style')">🎥 Analyse du style visuel</button>
         <button class="ai-btn" onclick="askAI('relire')">✍️ Améliorer mon texte</button>
         
-        <div id="ai-loader" class="ai-loader">Nexus (Gemini 3) réfléchit...</div>
+        <div id="ai-loader" class="ai-loader">Nexus réfléchit...</div>
         <div id="ai-output">Besoin d'un coup de main ?</div>
     </aside>
 
@@ -113,7 +95,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBDE71GtieeUYTR86jUGpRVh0-qTjx5a-c",
@@ -127,59 +108,58 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- CONFIGURATION IA DIRECTE (GEMINI 3 - 2026) ---
-        const genAI = new GoogleGenerativeAI("AIzaSyB4vtr_0zkCNgfiLrpBCKzwK_FNSdqpDdE");
+        // --- CONFIGURATION IA DIRECTE VIA FETCH (SANS SDK POUR ÉVITER LA 404) ---
+        const API_KEY = "AIzaSyB4vtr_0zkCNgfiLrpBCKzwK_FNSdqpDdE";
 
-     window.askAI = async (type) => {
-    const title = document.getElementById('docTitle').value;
-    const content = document.getElementById('docContent').value;
-    const output = document.getElementById('ai-output');
-    const loader = document.getElementById('ai-loader');
+        window.askAI = async (type) => {
+            const title = document.getElementById('docTitle').value;
+            const content = document.getElementById('docContent').value;
+            const output = document.getElementById('ai-output');
+            const loader = document.getElementById('ai-loader');
 
-    if(!title && type !== 'relire') return alert("Indiquez le titre du film.");
+            if(!title && type !== 'relire') return alert("Indiquez le titre du film.");
 
-    loader.style.display = "block";
-    output.innerText = "Nexus réfléchit...";
+            loader.style.display = "block";
+            output.innerText = "Nexus réfléchit...";
 
-    try {
-        // ON UTILISE L'IDENTIFIANT TECHNIQUE STABLE (Le seul qui évite la 404)
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            let prompt = "";
+            if(type === 'infos') prompt = `Réalisateur et année du film "${title}". Réponds au format strict : Réalisateur : [Nom], Année : [Année].`;
+            if(type === 'anecdote') prompt = `Raconte une anecdote de tournage courte sur le film "${title}".`;
+            if(type === 'style') prompt = `Analyse le style visuel de "${title}" en 3 points courts.`;
+            if(type === 'relire') prompt = `Reformule ce texte de critique cinéma pour le rendre plus pro : ${content}`;
 
-        let prompt = "";
-        if(type === 'infos') prompt = `Réalisateur et année du film "${title}". Réponds au format strict : Réalisateur : [Nom], Année : [Année].`;
-        if(type === 'anecdote') prompt = `Raconte une anecdote de tournage courte sur le film "${title}".`;
-        if(type === 'style') prompt = `Analyse le style visuel de "${title}" en 3 points courts.`;
-        if(type === 'relire') prompt = `Reformule ce texte de façon professionnelle : ${content}`;
+            try {
+                // APPEL DIRECT API v1 (Stable 2026)
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }]
+                    })
+                });
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+                const data = await response.json();
+                
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    const text = data.candidates[0].content.parts[0].text;
+                    output.innerText = text;
 
-        if (text) {
-            output.innerText = text;
-            
-            if(type === 'infos') {
-                const matchReal = text.match(/Réalisateur\s*:\s*([^,\n]*)/i);
-                const matchAnnee = text.match(/Année\s*:\s*(\d{4})/);
-                if(matchReal) document.getElementById('docDirector').value = matchReal[1].trim();
-                if(matchAnnee) document.getElementById('docYear').value = matchAnnee[1];
+                    if(type === 'infos') {
+                        const matchReal = text.match(/Réalisateur\s*:\s*([^,\n]*)/i);
+                        const matchAnnee = text.match(/Année\s*:\s*(\d{4})/);
+                        if(matchReal) document.getElementById('docDirector').value = matchReal[1].trim();
+                        if(matchAnnee) document.getElementById('docYear').value = matchAnnee[1];
+                    }
+                } else {
+                    throw new Error(data.error?.message || "Erreur de réponse");
+                }
+            } catch (e) {
+                console.error("Erreur Nexus:", e);
+                output.innerText = "Erreur : " + e.message;
+            } finally {
+                loader.style.display = "none";
             }
-        }
-    } catch (e) {
-        console.error("Détail de l'erreur :", e);
-        // Si gemini-1.5-flash échoue encore, on tente le tout pour le tout avec 'gemini-pro'
-        output.innerText = "Tentative sur canal secondaire...";
-        try {
-            const modelPro = genAI.getGenerativeModel({ model: "gemini-pro" });
-            const resPro = await modelPro.generateContent(prompt);
-            output.innerText = resPro.response.text();
-        } catch(e2) {
-            output.innerText = "Erreur : Modèle introuvable. Vérifiez l'activation du modèle dans Google AI Studio.";
-        }
-    } finally {
-        loader.style.display = "none";
-    }
-};
+        };
 
         // --- LOGIQUE FIREBASE & INTERFACE ---
         const urlParams = new URLSearchParams(window.location.search);
